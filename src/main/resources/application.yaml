@@ -9,10 +9,13 @@ spring:
       class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     open-in-view: false
-
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   flyway:
     enabled: true
 
@@ -46,3 +49,5 @@ app:
   facebook:
     app-id: ${FACEBOOK_APP_ID}
     app-secret: ${FACEBOOK_APP_SECRET}
+  storage:
+    upload-dir: ${UPLOAD_DIR:uploads}

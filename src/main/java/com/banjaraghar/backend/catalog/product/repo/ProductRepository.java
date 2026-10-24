@@ -1,0 +1,45 @@
+package com.banjaraghar.backend.catalog.product.repo;
+
+import com.banjaraghar.backend.catalog.product.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
+
+    // Admin list: loads the category together with the page, avoiding one query per row
+    @Override
+    @EntityGraph(attributePaths = "category")
+    Page<Product> findAll(Pageable pageable);
+
+    Optional<Product> findBySlugAndActiveTrueAndCategoryActiveTrue(String slug);
+
+    boolean existsBySlug(String slug);
+
+    boolean existsBySkuIgnoreCase(String sku);
+
+    boolean existsBySkuIgnoreCaseAndIdNot(String sku, UUID id);
+
+    List<Product> findByIdIn(Collection<UUID> ids);
+
+    List<Product> findByActiveTrueAndCategoryActiveTrue(Pageable pageable);
+
+    List<Product> findByActiveTrueAndFeaturedTrueAndCategoryActiveTrue(Pageable pageable);
+
+    List<Product> findByCategoryIdAndActiveTrueAndIdNotIn(UUID categoryId, Collection<UUID> excludedIds,
+                                                          Pageable pageable);
+
+    /** Ids of products matching a PostgreSQL text-search query (already sanitized by the service). */
+    @Query(value = "select id from products where search_vector @@ to_tsquery('simple', :query)",
+            nativeQuery = true)
+    List<UUID> searchIds(@Param("query") String query);
+}

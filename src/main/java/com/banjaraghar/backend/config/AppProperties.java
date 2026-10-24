@@ -18,6 +18,7 @@ public class AppProperties {
     private Razorpay razorpay = new Razorpay();
     private Google google = new Google();
     private Facebook facebook = new Facebook();
+    private Storage storage = new Storage();
 
     @Getter
     @Setter
@@ -52,5 +53,11 @@ public class AppProperties {
     public static class Facebook {
         private String appId;
         private String appSecret;
+    }
+
+    @Getter
+    @Setter
+    public static class Storage {
+        private String uploadDir = "uploads";
     }
 }
