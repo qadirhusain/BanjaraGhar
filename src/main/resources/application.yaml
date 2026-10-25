@@ -2,9 +2,9 @@ spring:
   application:
     name: backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/banjaraghar
+    url: ${DB_URL}
     username: postgres
-    password: Newplan@123
+    password: ${DB_PASSWORD}
     driver:
       class-name: org.postgresql.Driver
   jpa:

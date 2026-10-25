@@ -104,7 +104,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 
-    private List<ProductSummaryResponse> toSummaries(List<Product> products) {
+    public List<ProductSummaryResponse> toSummaries(List<Product> products) {
         Map<UUID, String> images = productImageService.firstImageUrls(products);
         return products.stream()
                 .map(product -> productMapper.toSummary(product, images.get(product.getId())))

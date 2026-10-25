@@ -42,4 +42,20 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
     @Query(value = "select id from products where search_vector @@ to_tsquery('simple', :query)",
             nativeQuery = true)
     List<UUID> searchIds(@Param("query") String query);
+
+    Optional<Product> findByIdAndActiveTrueAndCategoryActiveTrue(UUID id);
+
+    @Query("""
+            select p from Product p
+            join p.category c
+            where p.active = true
+              and c.active = true
+              and p.stockQuantity > 0
+              and p.id not in :excludedIds
+              and (p.featured = true or c.id in :categoryIds)
+            order by p.createdAt desc
+            """)
+    List<Product> findSuggestions(@Param("excludedIds") Collection<UUID> excludedIds,
+                                  @Param("categoryIds") Collection<UUID> categoryIds,
+                                  Pageable pageable);
 }

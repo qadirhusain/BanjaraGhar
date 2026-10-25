@@ -3,11 +3,13 @@ package com.banjaraghar.backend.user.service;
 import com.banjaraghar.backend.auth.repo.AuthIdentityRepository;
 import com.banjaraghar.backend.auth.repo.EmailOtpRepository;
 import com.banjaraghar.backend.auth.service.RefreshTokenService;
+import com.banjaraghar.backend.cart.repo.CartItemRepository;
 import com.banjaraghar.backend.exception.BadRequestException;
 import com.banjaraghar.backend.user.dto.request.DeleteAccountRequest;
 import com.banjaraghar.backend.user.entity.User;
 import com.banjaraghar.backend.user.repo.AddressRepository;
 import com.banjaraghar.backend.user.repo.UserRepository;
+import com.banjaraghar.backend.wishlist.repo.WishlistItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,8 @@ public class AccountDeletionService {
     private final EmailOtpRepository emailOtpRepository;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
+    private final WishlistItemRepository wishlistItemRepository;
+    private final CartItemRepository cartItemRepository;
 
     @Transactional
     public void deleteAccount(UUID userId, DeleteAccountRequest request) {
@@ -43,6 +47,8 @@ public class AccountDeletionService {
         String originalEmail = user.getEmail();
 
         addressRepository.deleteByUserId(userId);
+        wishlistItemRepository.deleteByUserId(userId);
+        cartItemRepository.deleteByUserId(userId);
         authIdentityRepository.deleteByUserId(userId);
         emailOtpRepository.deleteByEmailIgnoreCase(originalEmail);
         refreshTokenService.revokeAllForUser(userId);
