@@ -51,3 +51,6 @@ app:
     app-secret: ${FACEBOOK_APP_SECRET}
   storage:
     upload-dir: ${UPLOAD_DIR:uploads}
+  shipping:
+    flat-fee: 8900        # paise (Rs 89)
+    free-above: 99900     # paise (Rs 999)
