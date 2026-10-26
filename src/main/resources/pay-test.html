@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Banjara Ghar payment test</title></head>
+<body style="font-family:sans-serif;max-width:560px;margin:40px auto">
+<h3>Razorpay test payment</h3>
+<p>Paste values from the <code>POST /api/checkout</code> response.</p>
+<label>razorpayKeyId<br><input id="key" style="width:100%"></label><br><br>
+<label>razorpayOrderId<br><input id="order" style="width:100%"></label><br><br>
+<label>totalAmount (paise)<br><input id="amount" style="width:100%"></label><br><br>
+<button onclick="pay()">Pay</button>
+<pre id="out" style="background:#f4f4f4;padding:12px;margin-top:20px;white-space:pre-wrap"></pre>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    function pay() {
+        const rzp = new Razorpay({
+            key: document.getElementById('key').value.trim(),
+            order_id: document.getElementById('order').value.trim(),
+            amount: Number(document.getElementById('amount').value),
+            currency: 'INR',
+            name: 'Banjara Ghar (test)',
+            handler: function (r) {
+                document.getElementById('out').textContent = JSON.stringify({
+                    razorpayOrderId: r.razorpay_order_id,
+                    razorpayPaymentId: r.razorpay_payment_id,
+                    razorpaySignature: r.razorpay_signature
+                }, null, 2);
+            }
+        });
+        rzp.on('payment.failed', function (e) {
+            document.getElementById('out').textContent = 'Payment failed: ' + e.error.description;
+        });
+        rzp.open();
+    }
+</script>
+</body>
+</html>

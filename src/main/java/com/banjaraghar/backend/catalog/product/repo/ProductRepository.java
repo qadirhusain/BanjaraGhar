@@ -3,10 +3,7 @@ package com.banjaraghar.backend.catalog.product.repo;
 import com.banjaraghar.backend.catalog.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
@@ -58,4 +55,13 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
     List<Product> findSuggestions(@Param("excludedIds") Collection<UUID> excludedIds,
                                   @Param("categoryIds") Collection<UUID> categoryIds,
                                   Pageable pageable);
+
+    @Modifying(flushAutomatically = true)
+    @Query("update Product p set p.stockQuantity = p.stockQuantity - :quantity "
+            + "where p.id = :id and p.stockQuantity >= :quantity")
+    int reserveStock(@Param("id") UUID id, @Param("quantity") int quantity);
+
+    @Modifying(flushAutomatically = true)
+    @Query("update Product p set p.stockQuantity = p.stockQuantity + :quantity where p.id = :id")
+    void releaseStock(@Param("id") UUID id, @Param("quantity") int quantity);
 }

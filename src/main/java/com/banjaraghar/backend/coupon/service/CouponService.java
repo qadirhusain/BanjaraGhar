@@ -5,6 +5,7 @@ import com.banjaraghar.backend.coupon.dto.request.CouponRequest;
 import com.banjaraghar.backend.coupon.dto.response.CouponCheckResponse;
 import com.banjaraghar.backend.coupon.dto.response.CouponResponse;
 import com.banjaraghar.backend.coupon.entity.Coupon;
+import com.banjaraghar.backend.coupon.entity.CouponRedemption;
 import com.banjaraghar.backend.coupon.enums.DiscountType;
 import com.banjaraghar.backend.coupon.repo.CouponRedemptionRepository;
 import com.banjaraghar.backend.coupon.repo.CouponRepository;
@@ -13,6 +14,7 @@ import com.banjaraghar.backend.exception.BadRequestException;
 import com.banjaraghar.backend.exception.ConflictException;
 import com.banjaraghar.backend.exception.ResourceNotFoundException;
 import com.banjaraghar.backend.order.service.ShippingFeeService;
+import com.banjaraghar.backend.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,29 +55,26 @@ public class CouponService {
     @Transactional(readOnly = true)
     public Coupon getUsableCoupon(UUID userId, String code, long subtotal) {
         Coupon coupon = couponRepository.findByCode(normalize(code))
-                .filter(Coupon::isActive)
                 .orElseThrow(() -> new BadRequestException("Invalid coupon code"));
-
-        Instant now = Instant.now();
-        if (coupon.getStartsAt() != null && now.isBefore(coupon.getStartsAt())) {
-            throw new BadRequestException("This coupon is not active yet");
-        }
-        if (coupon.getExpiresAt() != null && !now.isBefore(coupon.getExpiresAt())) {
-            throw new BadRequestException("This coupon has expired");
-        }
-        if (subtotal < coupon.getMinOrderAmount()) {
-            throw new BadRequestException("This coupon needs a minimum order of ₹"
-                    + formatRupees(coupon.getMinOrderAmount()));
-        }
-        if (coupon.getUsageLimit() != null
-                && couponRedemptionRepository.countByCouponId(coupon.getId()) >= coupon.getUsageLimit()) {
-            throw new BadRequestException("This coupon has reached its usage limit");
-        }
-        if (couponRedemptionRepository.countByCouponIdAndUserId(coupon.getId(), userId) >= coupon.getPerUserLimit()) {
-            throw new BadRequestException("You have already used this coupon");
-        }
-
+        checkRules(coupon, userId, subtotal);
         return coupon;
+    }
+
+    @Transactional
+    public Coupon lockUsableCoupon(UUID userId, String code, long subtotal) {
+        Coupon coupon = couponRepository.findByCodeForUpdate(normalize(code))
+                .orElseThrow(() -> new BadRequestException("Invalid coupon code"));
+        checkRules(coupon, userId, subtotal);
+        return coupon;
+    }
+
+    @Transactional
+    public void recordRedemption(Coupon coupon, User user, UUID orderId) {
+        CouponRedemption redemption = new CouponRedemption();
+        redemption.setCoupon(coupon);
+        redemption.setUser(user);
+        redemption.setOrderId(orderId);
+        couponRedemptionRepository.save(redemption);
     }
 
     public long calculateDiscount(Coupon coupon, long subtotal) {
@@ -208,5 +207,30 @@ public class CouponService {
                 coupon.isActive(),
                 redeemCount,
                 coupon.getCreatedAt());
+    }
+
+    private void checkRules(Coupon coupon, UUID userId, long subtotal) {
+        if (!coupon.isActive()) {
+            throw new BadRequestException("Invalid coupon code");
+        }
+
+        Instant now = Instant.now();
+        if (coupon.getStartsAt() != null && now.isBefore(coupon.getStartsAt())) {
+            throw new BadRequestException("This coupon is not active yet");
+        }
+        if (coupon.getExpiresAt() != null && !now.isBefore(coupon.getExpiresAt())) {
+            throw new BadRequestException("This coupon has expired");
+        }
+        if (subtotal < coupon.getMinOrderAmount()) {
+            throw new BadRequestException("This coupon needs a minimum order of ₹"
+                    + formatRupees(coupon.getMinOrderAmount()));
+        }
+        if (coupon.getUsageLimit() != null
+                && couponRedemptionRepository.countByCouponId(coupon.getId()) >= coupon.getUsageLimit()) {
+            throw new BadRequestException("This coupon has reached its usage limit");
+        }
+        if (couponRedemptionRepository.countByCouponIdAndUserId(coupon.getId(), userId) >= coupon.getPerUserLimit()) {
+            throw new BadRequestException("You have already used this coupon");
+        }
     }
 }

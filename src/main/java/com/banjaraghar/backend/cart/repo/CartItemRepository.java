@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,4 +35,6 @@ public interface CartItemRepository extends JpaRepository<CartItem, UUID> {
     void deleteByUserIdAndProductId(UUID userId, UUID productId);
 
     void deleteByUserId(UUID userId);
+
+    void deleteByUserIdAndProductIdIn(UUID userId, Collection<UUID> productIds);
 }

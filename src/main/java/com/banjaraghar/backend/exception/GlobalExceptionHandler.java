@@ -102,9 +102,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ApiError> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex,
-                                                           HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
         return build(HttpStatus.METHOD_NOT_ALLOWED, "This method is not supported for this URL", request, null);
+    }
+
+    @ExceptionHandler(PaymentGatewayException.class)
+    public ResponseEntity<ApiError> handlePaymentGateway(PaymentGatewayException ex, HttpServletRequest request) {
+        log.error("Payment gateway error on {}", request.getRequestURI(), ex);
+        return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), request, null);
     }
 
     private ResponseEntity<ApiError> build(HttpStatus status, String message, HttpServletRequest request, Map<String, String> fieldErrors) {
