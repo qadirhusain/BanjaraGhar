@@ -12,6 +12,8 @@ import com.banjaraghar.backend.catalog.product.repo.ProductSpecifications;
 import com.banjaraghar.backend.catalog.product.repo.RelatedProductRepository;
 import com.banjaraghar.backend.common.response.PageResponse;
 import com.banjaraghar.backend.exception.ResourceNotFoundException;
+import com.banjaraghar.backend.order.enums.OrderStatus;
+import com.banjaraghar.backend.order.repo.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,12 +33,14 @@ public class ProductService {
     private static final int MAX_SEARCH_WORDS = 5;
     private static final int HOME_LIST_SIZE = 8;
     private static final int RELATED_LIMIT = 4;
+    private static final List<OrderStatus> SOLD_STATUSES = List.of(OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED);
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final RelatedProductRepository relatedProductRepository;
     private final ProductImageService productImageService;
     private final ProductMapper productMapper;
+    private final OrderItemRepository orderItemRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<ProductSummaryResponse> search(String q, String categorySlug, Long minPrice, Long maxPrice,
@@ -95,8 +100,26 @@ public class ProductService {
         List<ProductSummaryResponse> newArrivals = toSummaries(
                 productRepository.findByActiveTrueAndCategoryActiveTrue(newestFirst));
 
-        // Bestsellers need order data (Step 6). Empty until then; the website hides an empty section.
-        return new HomeResponse(featured, newArrivals, List.of());
+        // Empty until the first sale; the website hides an empty section
+        return new HomeResponse(featured, newArrivals, getBestSellers());
+    }
+
+    private List<ProductSummaryResponse> getBestSellers() {
+        // Ask for more than needed, because a top seller may have been hidden since
+        List<UUID> rankedIds = orderItemRepository.findBestSellerProductIds(SOLD_STATUSES,
+                PageRequest.of(0, HOME_LIST_SIZE * 2));
+        if (rankedIds.isEmpty()) {
+            return List.of();
+        }
+
+        Map<UUID, Product> visible = productRepository.findVisibleByIdIn(rankedIds).stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+        List<Product> bestSellers = rankedIds.stream()
+                .map(visible::get)
+                .filter(Objects::nonNull)
+                .limit(HOME_LIST_SIZE)
+                .toList();
+        return toSummaries(bestSellers);
     }
 
     private Product getVisibleProduct(String slug) {

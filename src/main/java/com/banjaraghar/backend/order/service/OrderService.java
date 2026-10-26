@@ -1,30 +1,57 @@
 package com.banjaraghar.backend.order.service;
 
 import com.banjaraghar.backend.catalog.product.repo.ProductRepository;
+import com.banjaraghar.backend.common.response.PageResponse;
 import com.banjaraghar.backend.coupon.repo.CouponRedemptionRepository;
 import com.banjaraghar.backend.exception.ResourceNotFoundException;
 import com.banjaraghar.backend.order.dto.response.OrderAddressResponse;
 import com.banjaraghar.backend.order.dto.response.OrderItemResponse;
 import com.banjaraghar.backend.order.dto.response.OrderResponse;
+import com.banjaraghar.backend.order.dto.response.OrderSummaryResponse;
 import com.banjaraghar.backend.order.entity.Order;
 import com.banjaraghar.backend.order.entity.OrderItem;
 import com.banjaraghar.backend.order.enums.OrderStatus;
+import com.banjaraghar.backend.order.repo.OrderItemRepository;
 import com.banjaraghar.backend.order.repo.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
+    private static final int MAX_PAGE_SIZE = 50;
+
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
     private final CouponRedemptionRepository redemptionRepository;
+
+    @Transactional(readOnly = true)
+    public PageResponse<OrderSummaryResponse> listOrders(UUID userId, int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, MAX_PAGE_SIZE),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Order> result = orderRepository.findVisibleForUser(userId, OrderStatus.EXPIRED, pageable);
+        Map<UUID, List<OrderItem>> items = loadItems(result.getContent());
+
+        List<OrderSummaryResponse> content = result.getContent().stream()
+                .map(order -> toSummary(order, items.getOrDefault(order.getId(), List.of())))
+                .toList();
+        return PageResponse.of(result, content);
+    }
 
     @Transactional(readOnly = true)
     public OrderResponse getOrder(UUID userId, UUID orderId) {
@@ -71,6 +98,20 @@ public class OrderService {
         return true;
     }
 
+    /** Loads the items of a whole page of orders with one query. */
+    public Map<UUID, List<OrderItem>> loadItems(List<Order> orders) {
+        if (orders.isEmpty()) {
+            return Map.of();
+        }
+        return orderItemRepository.findByOrderIdIn(orders.stream().map(Order::getId).toList()).stream()
+                .sorted(Comparator.comparing(OrderItem::getProductName))
+                .collect(Collectors.groupingBy(item -> item.getOrder().getId()));
+    }
+
+    public int countUnits(List<OrderItem> items) {
+        return items.stream().mapToInt(OrderItem::getQuantity).sum();
+    }
+
     public OrderResponse toResponse(Order order) {
         return new OrderResponse(
                 order.getId(),
@@ -81,14 +122,37 @@ public class OrderService {
                 order.getShippingFee(),
                 order.getTotalAmount(),
                 order.getCouponCode(),
-                new OrderAddressResponse(order.getShipName(), order.getShipPhone(), order.getShipLine1(),
-                        order.getShipLine2(), order.getShipCity(), order.getShipState(), order.getShipPincode()),
-                order.getItems().stream().map(this::toItemResponse).toList(),
+                toAddressResponse(order),
+                toItemResponses(order),
                 order.getCreatedAt(),
                 order.getPaidAt(),
                 order.getExpiresAt(),
                 order.getRefundStatus(),
                 order.getRefundAmount());
+    }
+
+    public OrderAddressResponse toAddressResponse(Order order) {
+        return new OrderAddressResponse(order.getShipName(), order.getShipPhone(), order.getShipLine1(),
+                order.getShipLine2(), order.getShipCity(), order.getShipState(), order.getShipPincode());
+    }
+
+    public List<OrderItemResponse> toItemResponses(Order order) {
+        return order.getItems().stream().map(this::toItemResponse).toList();
+    }
+
+    private OrderSummaryResponse toSummary(Order order, List<OrderItem> items) {
+        OrderItem first = items.isEmpty() ? null : items.getFirst();
+        return new OrderSummaryResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getStatus(),
+                order.getTotalAmount(),
+                countUnits(items),
+                first == null ? null : first.getProductName(),
+                first == null ? null : first.getImageUrl(),
+                order.getCreatedAt(),
+                order.getExpiresAt(),
+                order.getRefundStatus());
     }
 
     private OrderItemResponse toItemResponse(OrderItem item) {

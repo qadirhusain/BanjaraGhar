@@ -62,6 +62,8 @@ public class PaymentService {
             switch (event) {
                 case "payment.captured", "order.paid" -> handlePaid(body);
                 case "payment.failed" -> log.info("Razorpay reported a failed payment attempt");
+                case "refund.processed" -> handleRefund(body, RefundStatus.PROCESSED);
+                case "refund.failed" -> handleRefund(body, RefundStatus.FAILED);
                 default -> log.debug("Ignoring Razorpay webhook event {}", event);
             }
         } catch (JSONException e) {
@@ -85,6 +87,25 @@ public class PaymentService {
             return;
         }
         confirmPayment(order, paymentId);
+    }
+
+    private void handleRefund(JSONObject body, RefundStatus newStatus) {
+        JSONObject refund = body.getJSONObject("payload").getJSONObject("refund").getJSONObject("entity");
+        String refundId = refund.optString("id");
+
+        // Not found means our own request has not been saved yet. Answering 404 makes Razorpay send the event again.
+        Order order = orderRepository.findByRefundIdForUpdate(refundId)
+                .orElseThrow(() -> new ResourceNotFoundException("Refund not found"));
+
+        if (order.getRefundStatus() == RefundStatus.PROCESSED) {
+            return;   // a finished refund never goes backwards, even if events arrive out of order
+        }
+        order.setRefundStatus(newStatus);
+
+        if (newStatus == RefundStatus.FAILED) {
+            log.error("Refund {} for order {} failed. Refund it manually from the Razorpay dashboard",
+                    refundId, order.getOrderNumber());
+        }
     }
 
     private void confirmPayment(Order order, String paymentId) {

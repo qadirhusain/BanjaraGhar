@@ -64,4 +64,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
     @Modifying(flushAutomatically = true)
     @Query("update Product p set p.stockQuantity = p.stockQuantity + :quantity where p.id = :id")
     void releaseStock(@Param("id") UUID id, @Param("quantity") int quantity);
+
+    /** Visible products (with their category) for the given ids, in no particular order. */
+    @Query("""
+            select p from Product p join fetch p.category c
+            where p.id in :ids and p.active = true and c.active = true
+            """)
+    List<Product> findVisibleByIdIn(@Param("ids") Collection<UUID> ids);
 }
