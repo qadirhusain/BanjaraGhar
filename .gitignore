@@ -36,3 +36,6 @@ build/
 uploads/
 .env
 .env.*
+
+resources/
+db.migration/**
