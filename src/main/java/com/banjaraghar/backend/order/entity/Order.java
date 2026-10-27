@@ -89,6 +89,12 @@ public class Order {
     @Column(name = "cancelled_at")
     private Instant cancelledAt;
 
+    @Column(name = "shipped_at")
+    private Instant shippedAt;
+
+    @Column(name = "delivered_at")
+    private Instant deliveredAt;
+
     @Column(name = "refund_id")
     private String refundId;
 

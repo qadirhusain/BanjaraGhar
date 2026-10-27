@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/payments/webhook").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/payments/webhook", "/api/shipping/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**",
                                 "/api/home/**", "/uploads/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

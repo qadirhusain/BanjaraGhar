@@ -13,6 +13,7 @@ import com.banjaraghar.backend.order.repo.OrderRepository;
 import com.banjaraghar.backend.order.service.OrderService;
 import com.banjaraghar.backend.payment.client.RazorpayGateway;
 import com.banjaraghar.backend.payment.dto.request.VerifyPaymentRequest;
+import com.banjaraghar.backend.shipping.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -34,6 +35,7 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final OrderService orderService;
     private final CartItemRepository cartItemRepository;
+    private final ShipmentService shipmentService;
 
     @Transactional
     public OrderResponse verify(UUID userId, VerifyPaymentRequest request) {
@@ -118,6 +120,7 @@ public class PaymentService {
                 List<UUID> productIds = order.getItems().stream()
                         .map(OrderItem::getProduct).map(Product::getId).toList();
                 cartItemRepository.deleteByUserIdAndProductIdIn(order.getUser().getId(), productIds);
+                shipmentService.queue(order);
             }
             case EXPIRED, CANCELLED -> refundLatePayment(order, paymentId);
             default -> log.debug("Order {} is already {}", order.getOrderNumber(), order.getStatus());

@@ -112,6 +112,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), request, null);
     }
 
+    @ExceptionHandler(ShippingGatewayException.class)
+    public ResponseEntity<ApiError> handleShippingGateway(ShippingGatewayException ex, HttpServletRequest request) {
+        log.error("Shipping gateway error on {}: {}", request.getRequestURI(), ex.getMessage());
+        return build(HttpStatus.BAD_GATEWAY, "The shipping service could not complete this. Please try again later.", request, null);
+    }
+
     private ResponseEntity<ApiError> build(HttpStatus status, String message, HttpServletRequest request, Map<String, String> fieldErrors) {
 
         ApiError body = new ApiError(

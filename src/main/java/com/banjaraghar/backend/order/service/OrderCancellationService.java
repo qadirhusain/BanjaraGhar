@@ -8,6 +8,7 @@ import com.banjaraghar.backend.order.enums.OrderStatus;
 import com.banjaraghar.backend.order.enums.RefundStatus;
 import com.banjaraghar.backend.order.repo.OrderRepository;
 import com.banjaraghar.backend.payment.client.RazorpayGateway;
+import com.banjaraghar.backend.shipping.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class OrderCancellationService {
     private final OrderRepository orderRepository;
     private final OrderService orderService;
     private final RazorpayGateway razorpayGateway;
+    private final ShipmentService shipmentService;
 
     /** A customer cancels their own order. */
     @Transactional
@@ -46,7 +48,8 @@ public class OrderCancellationService {
                 // by PaymentService because the order is no longer open.
                     orderService.release(order, OrderStatus.CANCELLED);
             case PAID -> {
-                // Step 7 adds the Shiprocket shipment cancellation here
+                // Cancel the courier booking first: if Shiprocket refuses, nothing is canceled or refunded
+                shipmentService.cancelForOrder(order);
                 orderService.release(order, OrderStatus.CANCELLED);
                 order.setRefundId(razorpayGateway.refund(order.getRazorpayPaymentId(), order.getTotalAmount()));
                 order.setRefundStatus(RefundStatus.INITIATED);

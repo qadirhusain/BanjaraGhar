@@ -18,7 +18,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 5MB
-      max-request-size: 6MB
+      max-request-size: 26MB
   flyway:
     enabled: true
 
@@ -57,3 +57,21 @@ app:
   shipping:
     flat-fee: 8900        # paise (Rs 89)
     free-above: 99900     # paise (Rs 999)
+  shiprocket:
+    enabled: ${SHIPROCKET_ENABLED:false}
+    base-url: ${SHIPROCKET_BASE_URL:https://api-sandbox.shiprocket.in}
+    email: qadirh995+api@gmail.com
+    password: 530188af59c45690592a432367d220d3
+    pickup-location: {SHIPROCKET_PICKUP_LOCATION: Home}
+    webhook-token: ${SHIPROCKET_WEBHOOK_TOKEN:HJ8na2M0Wq6bdrvBjyhcROMUfXibWYuR194bYQarfJg=}
+    max-attempts: 8
+    seller: # where returned parcels go back to
+      name: Banjara Ghar
+      address: "254, Mohd. Zai, near Rashid Box Factory, Shahjahanpur, Uttar Pradesh, India, 242001"
+      city: Shahjahanpur
+      state: Uttar Pradesh
+      pincode: ${SELLER_PINCODE:242001}
+      phone: ${SELLER_PHONE:6393209796}
+      email: ${SELLER_EMAIL:qadirh995@gmail.com}
+  returns:
+    window-days: 7
