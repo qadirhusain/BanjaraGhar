@@ -62,7 +62,7 @@ public class HomeSectionService {
         return result;
     }
 
-    // ------------------------------------------------------------------- admin
+    // ------------------------------------------------------------------- activitylog
 
     @Transactional(readOnly = true)
     public List<AdminHomeSectionResponse> listAll() {

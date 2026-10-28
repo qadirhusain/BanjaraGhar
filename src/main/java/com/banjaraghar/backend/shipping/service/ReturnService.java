@@ -124,7 +124,7 @@ public class ReturnService {
         return toResponse(request, photoUrls(List.of(request)).getOrDefault(request.getId(), List.of()));
     }
 
-    // ------------------------------------------------------------ admin
+    // ------------------------------------------------------------ activitylog
 
     @Transactional(readOnly = true)
     public PageResponse<AdminReturnResponse> list(ReturnStatus status, int page, int size) {
@@ -206,7 +206,7 @@ public class ReturnService {
 
     /**
      * Best effort: the refund is already decided, so a Shiprocket problem must not undo the approval.
-     * If it fails, the admin books the pickup by hand in the Shiprocket panel (returnAwb stays empty).
+     * If it fails, the activitylog books the pickup by hand in the Shiprocket panel (returnAwb stays empty).
      */
     private void bookReversePickup(Order order, ReturnRequest request) {
         if (!appProperties.getShiprocket().isEnabled()) {

@@ -19,7 +19,6 @@ public class AppProperties {
     private Google google = new Google();
     private Facebook facebook = new Facebook();
     private Storage storage = new Storage();
-    private Shipping shipping = new Shipping();
     private Shiprocket shiprocket = new Shiprocket();
     private Returns returns = new Returns();
 
@@ -62,13 +61,6 @@ public class AppProperties {
     @Setter
     public static class Storage {
         private String uploadDir = "uploads";
-    }
-
-    @Getter
-    @Setter
-    public static class Shipping {
-        private long flatFee = 8900;
-        private long freeAbove = 9900;
     }
 
     @Getter

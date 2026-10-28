@@ -90,7 +90,7 @@ public class CouponService {
         return Math.min(discount, subtotal);
     }
 
-    // ------------------------------------------------------------------- admin
+    // ------------------------------------------------------------------- activitylog
 
     @Transactional(readOnly = true)
     public List<CouponResponse> listAll() {

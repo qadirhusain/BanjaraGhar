@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** Everything the admin needs about one order, including the payment and refund references. */
+/** Everything the activitylog needs about one order, including the payment and refund references. */
 @Getter
 @AllArgsConstructor
 public class AdminOrderResponse {

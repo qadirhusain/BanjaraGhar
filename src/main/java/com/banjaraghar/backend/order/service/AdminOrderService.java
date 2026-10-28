@@ -53,7 +53,7 @@ public class AdminOrderService {
         return toResponse(order);
     }
 
-    /** The admin cancels an order (for example when an item turns out to be broken) and refunds it if it was paid. */
+    /** The activitylog cancels an order (for example when an item turns out to be broken) and refunds it if it was paid. */
     @Transactional
     public AdminOrderResponse cancel(UUID orderId) {
         Order order = orderRepository.findByIdForUpdate(orderId)

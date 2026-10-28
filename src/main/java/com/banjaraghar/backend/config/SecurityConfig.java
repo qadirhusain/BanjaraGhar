@@ -44,7 +44,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/api/payments/webhook", "/api/shipping/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**",
-                                "/api/home/**", "/uploads/**").permitAll()
+                                "/api/home/**", "/api/settings/**", "/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/contact", "/api/newsletter/subscribe").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

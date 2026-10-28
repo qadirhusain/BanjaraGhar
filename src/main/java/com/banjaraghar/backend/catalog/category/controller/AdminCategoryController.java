@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/admin/categories")
+@RequestMapping("/api/activitylog/categories")
 @RequiredArgsConstructor
 public class AdminCategoryController {
 

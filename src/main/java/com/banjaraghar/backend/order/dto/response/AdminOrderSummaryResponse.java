@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.UUID;
 
-/** One row of the admin order list. */
+/** One row of the activitylog order list. */
 @Getter
 @AllArgsConstructor
 public class AdminOrderSummaryResponse {

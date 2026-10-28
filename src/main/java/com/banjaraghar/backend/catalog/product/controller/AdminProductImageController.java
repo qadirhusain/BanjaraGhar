@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/admin/products/{productId}/images")
+@RequestMapping("/api/activitylog/products/{productId}/images")
 @RequiredArgsConstructor
 public class AdminProductImageController {
 

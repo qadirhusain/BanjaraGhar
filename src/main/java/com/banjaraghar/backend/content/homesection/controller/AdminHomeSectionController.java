@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/admin/home-sections")
+@RequestMapping("/api/activitylog/home-sections")
 @RequiredArgsConstructor
 public class AdminHomeSectionController {
 

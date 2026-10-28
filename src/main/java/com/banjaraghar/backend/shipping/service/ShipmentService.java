@@ -179,7 +179,7 @@ public class ShipmentService {
         } else if (statusId != null && ON_THE_WAY.contains(statusId)) {
             markShipped(order);
         } else if (statusId != null && RETURNING.contains(statusId)) {
-            log.warn("Order {} is on its way back to the seller (Shiprocket status {}). Check it in the admin panel",
+            log.warn("Order {} is on its way back to the seller (Shiprocket status {}). Check it in the activitylog panel",
                     order.getOrderNumber(), statusId);
         }
     }
@@ -201,7 +201,7 @@ public class ShipmentService {
         }
     }
 
-    // ------------------------------------------------------------ admin
+    // ------------------------------------------------------------ activitylog
 
     /** Sends a failed or missing shipment to Shiprocket again right now. */
     @Transactional

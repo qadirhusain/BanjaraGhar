@@ -50,7 +50,7 @@ public class BannerService {
                 .toList();
     }
 
-    // ------------------------------------------------------------------- admin
+    // ------------------------------------------------------------------- activitylog
 
     @Transactional(readOnly = true)
     public List<AdminBannerResponse> listAll(BannerPlacement placement) {

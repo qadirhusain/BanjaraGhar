@@ -67,7 +67,7 @@ public class AdminProductService {
         Product product = new Product();
         product.setSlug(uniqueSlug(request.getName()));
         apply(product, request, category);
-        // A new product starts hidden with no stock, until the admin adds photos and publishes it
+        // A new product starts hidden with no stock, until the activitylog adds photos and publishes it
         product.setStockQuantity(0);
         product.setFeatured(false);
         product.setActive(false);
