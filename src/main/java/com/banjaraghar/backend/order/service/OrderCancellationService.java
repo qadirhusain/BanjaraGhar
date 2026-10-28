@@ -1,5 +1,6 @@
 package com.banjaraghar.backend.order.service;
 
+import com.banjaraghar.backend.email.OrderEmailService;
 import com.banjaraghar.backend.exception.BadRequestException;
 import com.banjaraghar.backend.exception.ResourceNotFoundException;
 import com.banjaraghar.backend.order.dto.response.OrderResponse;
@@ -23,6 +24,7 @@ public class OrderCancellationService {
     private final OrderService orderService;
     private final RazorpayGateway razorpayGateway;
     private final ShipmentService shipmentService;
+    private final OrderEmailService orderEmailService;
 
     /** A customer cancels their own order. */
     @Transactional
@@ -54,6 +56,7 @@ public class OrderCancellationService {
                 order.setRefundId(razorpayGateway.refund(order.getRazorpayPaymentId(), order.getTotalAmount()));
                 order.setRefundStatus(RefundStatus.INITIATED);
                 order.setRefundAmount(order.getTotalAmount());
+                orderEmailService.orderCancelledWithRefund(order);
             }
             case CANCELLED -> throw new BadRequestException("This order has already been cancelled");
             case EXPIRED -> throw new BadRequestException("This order has expired");

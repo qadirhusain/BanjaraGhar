@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/activitylog/newsletter/subscribers")
+@RequestMapping("/api/admin/newsletter/subscribers")
 @RequiredArgsConstructor
 public class AdminNewsletterController {
 

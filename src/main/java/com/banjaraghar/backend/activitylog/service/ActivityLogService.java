@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 public class ActivityLogService {
 
     private static final int MAX_PAGE_SIZE = 100;
-    private static final String ADMIN_PREFIX = "/api/activitylog/";
+    private static final String ADMIN_PREFIX = "/api/admin/";
     private static final Pattern UUID_PATTERN =
             Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
 
@@ -33,7 +33,7 @@ public class ActivityLogService {
         Matcher matcher = UUID_PATTERN.matcher(uri);
         UUID entityId = matcher.find() ? UUID.fromString(matcher.group()) : null;
 
-        // Ids are replaced so every call to the same endpoint reads the same: POST /api/activitylog/returns/{id}/approve
+        // Ids are replaced so every call to the same endpoint reads the same: POST /api/admin/returns/{id}/approve
         String path = UUID_PATTERN.matcher(uri).replaceAll("{id}");
 
         String rest = path.startsWith(ADMIN_PREFIX) ? path.substring(ADMIN_PREFIX.length()) : path;

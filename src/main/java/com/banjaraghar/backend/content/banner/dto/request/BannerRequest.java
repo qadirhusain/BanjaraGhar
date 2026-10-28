@@ -24,7 +24,7 @@ public class BannerRequest {
     @Size(max = 500, message = "Link must be at most 500 characters")
     private String linkUrl;
 
-    // Upload the picture first with POST /api/activitylog/banners/image, then paste the url it returns here
+    // Upload the picture first with POST /api/admin/banners/image, then paste the url it returns here
     @NotBlank(message = "Image is required")
     @Size(max = 500, message = "Image url must be at most 500 characters")
     @Pattern(regexp = "^(/uploads/|https://).+", message = "Image must be an uploaded image or an https link")

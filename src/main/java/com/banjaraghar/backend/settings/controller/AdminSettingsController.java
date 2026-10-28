@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/activitylog/settings/shipping")
+@RequestMapping("/api/admin/settings/shipping")
 @RequiredArgsConstructor
 public class AdminSettingsController {
 

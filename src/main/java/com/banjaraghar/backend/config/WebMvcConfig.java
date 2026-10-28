@@ -15,6 +15,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
-        registry.addInterceptor(adminActivityInterceptor).addPathPatterns("/api/activitylog/**");
+        registry.addInterceptor(adminActivityInterceptor).addPathPatterns("/api/admin/**");
     }
 }

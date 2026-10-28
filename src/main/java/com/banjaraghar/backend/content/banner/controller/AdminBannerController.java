@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/activitylog/banners")
+@RequestMapping("/api/admin/banners")
 @RequiredArgsConstructor
 public class AdminBannerController {
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/activitylog/orders/{orderId}/shipment")
+@RequestMapping("/api/admin/orders/{orderId}/shipment")
 @RequiredArgsConstructor
 public class AdminShipmentController {
 

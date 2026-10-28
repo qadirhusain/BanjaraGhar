@@ -7,7 +7,7 @@ import lombok.*;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/activitylog/activity-log")
+@RequestMapping("/api/admin/activity-log")
 @RequiredArgsConstructor
 public class AdminActivityLogController {
 

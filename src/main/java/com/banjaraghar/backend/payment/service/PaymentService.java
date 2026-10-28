@@ -2,6 +2,7 @@ package com.banjaraghar.backend.payment.service;
 
 import com.banjaraghar.backend.cart.repo.CartItemRepository;
 import com.banjaraghar.backend.catalog.product.entity.Product;
+import com.banjaraghar.backend.email.OrderEmailService;
 import com.banjaraghar.backend.exception.BadRequestException;
 import com.banjaraghar.backend.exception.ResourceNotFoundException;
 import com.banjaraghar.backend.order.dto.response.OrderResponse;
@@ -36,6 +37,7 @@ public class PaymentService {
     private final OrderService orderService;
     private final CartItemRepository cartItemRepository;
     private final ShipmentService shipmentService;
+    private final OrderEmailService orderEmailService;
 
     @Transactional
     public OrderResponse verify(UUID userId, VerifyPaymentRequest request) {
@@ -121,6 +123,7 @@ public class PaymentService {
                         .map(OrderItem::getProduct).map(Product::getId).toList();
                 cartItemRepository.deleteByUserIdAndProductIdIn(order.getUser().getId(), productIds);
                 shipmentService.queue(order);
+                orderEmailService.orderConfirmed(order);
             }
             case EXPIRED, CANCELLED -> refundLatePayment(order, paymentId);
             default -> log.debug("Order {} is already {}", order.getOrderNumber(), order.getStatus());
@@ -135,6 +138,7 @@ public class PaymentService {
         order.setRefundId(razorpayGateway.refund(paymentId, order.getTotalAmount()));
         order.setRefundStatus(RefundStatus.INITIATED);
         order.setRefundAmount(order.getTotalAmount());
+        orderEmailService.latePaymentRefunded(order);
         log.warn("Payment {} arrived after order {} was {}. Refund started",
                 paymentId, order.getOrderNumber(), order.getStatus());
     }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -77,7 +78,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ApiError> handleTooManyRequests(TooManyRequestsException ex, HttpServletRequest request) {
-        log.error("Unexpected error on {}", request.getRequestURI(), ex);
         return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), request, null);
     }
 
@@ -116,6 +116,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleShippingGateway(ShippingGatewayException ex, HttpServletRequest request) {
         log.error("Shipping gateway error on {}: {}", request.getRequestURI(), ex.getMessage());
         return build(HttpStatus.BAD_GATEWAY, "The shipping service could not complete this. Please try again later.", request, null);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResource(NoResourceFoundException ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "Not found", request, null);
     }
 
     private ResponseEntity<ApiError> build(HttpStatus status, String message, HttpServletRequest request, Map<String, String> fieldErrors) {

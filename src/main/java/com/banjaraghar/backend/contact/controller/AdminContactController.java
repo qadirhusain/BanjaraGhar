@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/activitylog/messages")
+@RequestMapping("/api/admin/messages")
 @RequiredArgsConstructor
 public class AdminContactController {
 

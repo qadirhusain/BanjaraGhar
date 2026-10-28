@@ -2,6 +2,7 @@ package com.banjaraghar.backend.shipping.service;
 
 import com.banjaraghar.backend.common.response.PageResponse;
 import com.banjaraghar.backend.config.AppProperties;
+import com.banjaraghar.backend.email.OrderEmailService;
 import com.banjaraghar.backend.exception.BadRequestException;
 import com.banjaraghar.backend.exception.ConflictException;
 import com.banjaraghar.backend.exception.ResourceNotFoundException;
@@ -57,6 +58,7 @@ public class ReturnService {
     private final ShiprocketGateway shiprocketGateway;
     private final ShipmentService shipmentService;
     private final AppProperties appProperties;
+    private final OrderEmailService orderEmailService;
 
     // ------------------------------------------------------------ customer
 
@@ -181,6 +183,7 @@ public class ReturnService {
         request.setDecidedAt(Instant.now());
 
         bookReversePickup(order, request);
+        orderEmailService.returnApproved(order, request);
 
         return toAdminResponse(request, photoUrls(List.of(request)).getOrDefault(returnId, List.of()));
     }
@@ -189,7 +192,7 @@ public class ReturnService {
     public AdminReturnResponse reject(UUID returnId, RejectReturnRequest body) {
         UUID orderId = returnRequestRepository.findOrderIdById(returnId)
                 .orElseThrow(() -> new ResourceNotFoundException("Return not found"));
-        orderRepository.findByIdForUpdate(orderId)
+        Order order = orderRepository.findByIdForUpdate(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         ReturnRequest request = returnRequestRepository.findById(returnId)
                 .orElseThrow(() -> new ResourceNotFoundException("Return not found"));
@@ -200,6 +203,7 @@ public class ReturnService {
         request.setStatus(ReturnStatus.REJECTED);
         request.setAdminNote(clean(body.getNote()));
         request.setDecidedAt(Instant.now());
+        orderEmailService.returnRejected(order, request);
 
         return toAdminResponse(request, photoUrls(List.of(request)).getOrDefault(returnId, List.of()));
     }

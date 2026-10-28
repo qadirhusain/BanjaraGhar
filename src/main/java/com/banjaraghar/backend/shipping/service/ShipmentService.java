@@ -2,6 +2,7 @@ package com.banjaraghar.backend.shipping.service;
 
 import com.banjaraghar.backend.catalog.product.entity.Product;
 import com.banjaraghar.backend.config.AppProperties;
+import com.banjaraghar.backend.email.OrderEmailService;
 import com.banjaraghar.backend.exception.BadRequestException;
 import com.banjaraghar.backend.exception.ConflictException;
 import com.banjaraghar.backend.exception.ResourceNotFoundException;
@@ -42,6 +43,7 @@ public class ShipmentService {
     private final OrderRepository orderRepository;
     private final ShiprocketGateway gateway;
     private final AppProperties appProperties;
+    private final OrderEmailService orderEmailService;
 
     // ------------------------------------------------------------ after payment
 
@@ -177,17 +179,18 @@ public class ShipmentService {
         if (statusId != null && statusId == DELIVERED || "DELIVERED".equalsIgnoreCase(shipmentLabel)) {
             markDelivered(order);
         } else if (statusId != null && ON_THE_WAY.contains(statusId)) {
-            markShipped(order);
+            markShipped(order, shipment);
         } else if (statusId != null && RETURNING.contains(statusId)) {
             log.warn("Order {} is on its way back to the seller (Shiprocket status {}). Check it in the activitylog panel",
                     order.getOrderNumber(), statusId);
         }
     }
 
-    private void markShipped(Order order) {
+    private void markShipped(Order order, Shipment shipment) {
         if (order.getStatus() == OrderStatus.PAID) {
             order.setStatus(OrderStatus.SHIPPED);
             order.setShippedAt(Instant.now());
+            orderEmailService.orderShipped(order, shipment, TRACKING_URL + shipment.getAwbCode());
         }
     }
 

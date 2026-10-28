@@ -43,7 +43,7 @@ CREATE TABLE activity_logs
 (
     id          UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
     admin_id    UUID         NOT NULL REFERENCES users (id),
-    action      VARCHAR(200) NOT NULL, -- e.g. POST /api/activitylog/returns/{id}/approve
+    action      VARCHAR(200) NOT NULL, -- e.g. POST /api/admin/returns/{id}/approve
     entity_type VARCHAR(50),           -- e.g. returns, products, coupons
     entity_id   UUID,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
