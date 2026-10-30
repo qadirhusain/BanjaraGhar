@@ -13,7 +13,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/wishlist")
 @RequiredArgsConstructor
-public class WishlistController {
+public class
+WishlistController {
 
     private final WishlistService wishlistService;
 

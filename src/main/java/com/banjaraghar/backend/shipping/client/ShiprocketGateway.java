@@ -92,7 +92,7 @@ public class ShiprocketGateway {
         body.put("payment_method", "Prepaid");
         body.put("shipping_charges", rupees(order.getShippingFee()));
         body.put("total_discount", rupees(order.getDiscountAmount()));
-        body.put("sub_total", rupees(order.getTotalAmount()));
+        body.put("sub_total", rupees(order.getTotalAmount() - order.getShippingFee()));
         addParcel(body, parcel);
 
         return readOrder(post("/v1/external/orders/create/adhoc", body), "Shiprocket did not create the order");
@@ -158,7 +158,7 @@ public class ShiprocketGateway {
         body.put("shipping_phone", phone(seller.getPhone()));
         body.put("order_items", items(order));
         body.put("payment_method", "Prepaid");
-        body.put("sub_total", rupees(order.getTotalAmount()));
+        body.put("sub_total", rupees(order.getTotalAmount() - order.getShippingFee()));
         addParcel(body, parcel);
 
         return readOrder(post("/v1/external/orders/create/return", body), "Shiprocket did not create the return");
