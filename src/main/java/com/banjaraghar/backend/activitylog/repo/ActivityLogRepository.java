@@ -11,9 +11,9 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, UUID> 
 
     // Load the activitylog together with the page, avoiding one query per row
     @Override
-    @EntityGraph(attributePaths = "activitylog")
+    @EntityGraph(attributePaths = "admin")
     Page<ActivityLog> findAll(Pageable pageable);
 
-    @EntityGraph(attributePaths = "activitylog")
+    @EntityGraph(attributePaths = "admin")
     Page<ActivityLog> findByEntityType(String entityType, Pageable pageable);
 }

@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
@@ -55,14 +56,15 @@ public class LocalFileStorageService implements FileStorageService {
         if (url == null || !url.startsWith(URL_PREFIX)) {
             return;
         }
-        Path target = root.resolve(url.substring(URL_PREFIX.length())).normalize();
-        if (!target.startsWith(root)) {
-            return;   // never delete outside the upload folder
-        }
+
         try {
+            Path target = root.resolve(url.substring(URL_PREFIX.length())).normalize();
+            if (!target.startsWith(root)) {
+                return;   // never delete outside the upload folder
+            }
             Files.deleteIfExists(target);
-        } catch (IOException e) {
-            log.warn("Could not delete file {}", target, e);
+        } catch (InvalidPathException | IOException e) {
+            log.warn("Could not delete file for URL {}", url, e);
         }
     }
 }
