@@ -4,12 +4,15 @@ import com.banjaraghar.backend.catalog.category.dto.request.CategoryRequest;
 import com.banjaraghar.backend.catalog.category.dto.response.CategoryResponse;
 import com.banjaraghar.backend.catalog.category.service.CategoryService;
 import com.banjaraghar.backend.common.request.ActiveRequest;
+import com.banjaraghar.backend.common.response.ImageUploadResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -23,6 +26,12 @@ public class AdminCategoryController {
     @GetMapping
     public List<CategoryResponse> list() {
         return categoryService.listAll();
+    }
+
+    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ImageUploadResponse uploadImage(@RequestParam("file") MultipartFile file) {
+        return categoryService.uploadImage(file);
     }
 
     @PostMapping

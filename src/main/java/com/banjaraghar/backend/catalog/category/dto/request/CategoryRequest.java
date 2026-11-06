@@ -14,9 +14,10 @@ public class CategoryRequest {
     @Size(max = 500, message = "Description must be at most 500 characters")
     private String description;
 
-    @Size(max = 500, message = "Image must be at most 500 characters")
-    private String image;
-
     @PositiveOrZero(message = "Sort order cannot be negative")
     private Integer sortOrder;
+
+    @Size(max = 500, message = "Image must be at most 500 characters")
+    @Pattern(regexp = "^$|^(/uploads/|https://).+", message = "Image must be an uploaded image or an https link")
+    private String image;
 }

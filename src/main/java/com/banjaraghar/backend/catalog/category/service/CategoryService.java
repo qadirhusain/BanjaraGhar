@@ -4,22 +4,29 @@ import com.banjaraghar.backend.catalog.category.dto.request.CategoryRequest;
 import com.banjaraghar.backend.catalog.category.dto.response.CategoryResponse;
 import com.banjaraghar.backend.catalog.category.entity.Category;
 import com.banjaraghar.backend.catalog.category.repo.CategoryRepository;
+import com.banjaraghar.backend.common.response.ImageUploadResponse;
 import com.banjaraghar.backend.common.util.SlugUtil;
 import com.banjaraghar.backend.common.util.TextUtil;
 import com.banjaraghar.backend.exception.ConflictException;
 import com.banjaraghar.backend.exception.ResourceNotFoundException;
+import com.banjaraghar.backend.storage.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
 
+    private static final String STORAGE_FOLDER = "categories";
+
     private final CategoryRepository categoryRepository;
+    private final FileStorageService fileStorageService;
 
     @Transactional(readOnly = true)
     public List<CategoryResponse> listActive() {
@@ -33,6 +40,11 @@ public class CategoryService {
         return categoryRepository.findAllByOrderBySortOrderAscNameAsc().stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    /** Stores a category picture and returns its url, to be used in create or update. */
+    public ImageUploadResponse uploadImage(MultipartFile file) {
+        return new ImageUploadResponse(fileStorageService.storeImage(file, STORAGE_FOLDER));
     }
 
     @Transactional
@@ -57,8 +69,15 @@ public class CategoryService {
             throw new ConflictException("A category with this name already exists");
         }
 
+        String oldImage = category.getImage();
         apply(category, request);   // the slug stays the same so existing links keep working
-        return toResponse(categoryRepository.save(category));
+        Category saved = categoryRepository.save(category);
+
+        // A replaced picture is no longer needed
+        if (!Objects.equals(oldImage, saved.getImage())) {
+            fileStorageService.delete(oldImage);
+        }
+        return toResponse(saved);
     }
 
     @Transactional
